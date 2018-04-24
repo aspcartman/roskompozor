@@ -17,6 +17,7 @@ func Add(dst net.IP, iface string) error {
 	return err
 }
 
+// Returns all IPs presented in the routing table.
 func Routed() (IPSet, error) {
 	out, err := exec.Command("netstat", "-rnf", "inet").CombinedOutput()
 	if err != nil && len(out) > 0 {
