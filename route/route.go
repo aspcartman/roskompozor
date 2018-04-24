@@ -7,6 +7,8 @@ import (
 	"net"
 	"os/exec"
 	"strings"
+
+	"github.com/aspcartman/roskompozor/sets"
 )
 
 func Add(dst net.IP, iface string) error {
@@ -18,7 +20,7 @@ func Add(dst net.IP, iface string) error {
 }
 
 // Returns all IPs presented in the routing table.
-func Routed() (IPSet, error) {
+func Routed() (sets.IPs, error) {
 	out, err := exec.Command("netstat", "-rnf", "inet").CombinedOutput()
 	if err != nil && len(out) > 0 {
 		err = fmt.Errorf("%s: %s", err.Error(), string(out))
@@ -33,5 +35,5 @@ func Routed() (IPSet, error) {
 		}
 	}
 
-	return NewIPSet(ips, nil), err
+	return sets.NewIPSet(ips, nil), err
 }

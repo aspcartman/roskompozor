@@ -8,6 +8,7 @@ import (
 
 	"github.com/aspcartman/roskompozor/rkn"
 	"github.com/aspcartman/roskompozor/route"
+	"github.com/aspcartman/roskompozor/sets"
 	"github.com/aspcartman/roskompozor/sniff"
 	"github.com/sirupsen/logrus"
 )
@@ -31,10 +32,10 @@ type router struct {
 	Source rkn.Source
 
 	bannedRefresh time.Time
-	banned        route.IPSet
+	banned        sets.IPs
 
 	routedRefresh time.Time
-	routed        route.IPSet
+	routed        sets.IPs
 }
 
 func (r router) routeLoop() {
@@ -53,6 +54,8 @@ func (r router) routeLoop() {
 			case time.Since(r.bannedRefresh) > 10*time.Minute:
 				r.refreshBanned()
 			}
+		}, func(host string) {
+
 		}); err != nil {
 			logrus.WithError(err).Error("failed sniffing network traffic")
 		}

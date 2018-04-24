@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aspcartman/roskompozor/route"
+	"github.com/aspcartman/roskompozor/sets"
 )
 
-func ZapretInfo() (route.IPSet, error) {
+func ZapretInfo() (sets.IPs, error) {
 	res, err := http.Get("https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv")
 	if err != nil {
-		return route.IPSet{}, err
+		return sets.IPs{}, err
 	}
 
 	defer res.Body.Close()
@@ -28,16 +28,16 @@ func ZapretInfo() (route.IPSet, error) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return route.IPSet{}, err
+			return sets.IPs{}, err
 		}
 		str = strings.TrimSpace(str)
 
 		for _, ipstr := range strings.Split(strings.Split(str, ";")[0], " | ") {
 			if err := addip(ipstr, &ips, &nets); err != nil {
-				return route.IPSet{}, err
+				return sets.IPs{}, err
 			}
 		}
 	}
 
-	return route.NewIPSet(ips, nets), nil
+	return sets.NewIPSet(ips, nets), nil
 }

@@ -10,14 +10,13 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-
-func Sniff(name string, clb func(ip net.IP)) error {
+func Sniff(name string, ipclb func(ip net.IP), dnsclb func(host string)) error {
 	iface, err := interfaceNamed(name)
 	if err != nil {
 		return err
 	}
 
-	handle, err := pcap.OpenLive(iface.Name, 1024, false, pcap.BlockForever)
+	handle, err := pcap.OpenLive(iface.Name, 256, false, pcap.BlockForever)
 	if err != nil {
 		return err
 	}
@@ -40,8 +39,12 @@ func Sniff(name string, clb func(ip net.IP)) error {
 
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
-		if p, ok := packet.Layer(layers.LayerTypeIPv4).(*layers.IPv4); ok {
-			clb(p.DstIP)
+		if p, ok := packet.Layer(layers.LayerTypeDNS).(*layers.DNS); ok {
+			for _, q := range p.Questions {
+				dnsclb(string(q.Name))
+			}
+		} else if p, ok := packet.Layer(layers.LayerTypeIPv4).(*layers.IPv4); ok {
+			ipclb(p.DstIP)
 		}
 	}
 

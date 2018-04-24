@@ -6,10 +6,10 @@ import (
 	"net"
 	"strings"
 
-	"github.com/aspcartman/roskompozor/route"
+	"github.com/aspcartman/roskompozor/sets"
 )
 
-type Source func() (route.IPSet, error)
+type Source func() (sets.IPs, error)
 
 func addip(str string, ips *[]net.IP, nets *[]net.IPNet) error {
 	switch {

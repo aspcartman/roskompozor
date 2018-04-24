@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aspcartman/roskompozor/route"
+	"github.com/aspcartman/roskompozor/sets"
 )
 
-func AntiZapret() (route.IPSet, error) {
+func AntiZapret() (sets.IPs, error) {
 	res, err := http.Get("https://api.antizapret.info/group.php")
 	if err != nil {
-		return route.IPSet{}, err
+		return sets.IPs{}, err
 	}
 
 	defer res.Body.Close()
@@ -27,16 +27,16 @@ func AntiZapret() (route.IPSet, error) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return route.IPSet{}, err
+			return sets.IPs{}, err
 		}
 		str = strings.TrimSpace(str)
 
 		for _, ipstr := range strings.Split(str, ",") {
 			if err := addip(ipstr, &ips, &nets); err != nil {
-				return route.IPSet{}, err
+				return sets.IPs{}, err
 			}
 		}
 	}
 
-	return route.NewIPSet(ips, nets), nil
+	return sets.NewIPSet(ips, nets), nil
 }
