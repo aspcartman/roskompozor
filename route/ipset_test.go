@@ -9,7 +9,7 @@ import (
 )
 
 func TestContains(t *testing.T) {
-	set, err := rkn.GetBanned()
+	set, err := rkn.AntiZapret()
 	switch {
 	case err != nil:
 		t.Error(err)
@@ -25,7 +25,7 @@ func TestContains(t *testing.T) {
 }
 
 func BenchmarkContains(b *testing.B) {
-	set, _ := rkn.GetBanned()
+	set, _ := rkn.AntiZapret()
 	b.ResetTimer()
 	ip := net.ParseIP("108.174.10.10")
 	for i := 0; i < b.N; i++ {

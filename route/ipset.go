@@ -15,6 +15,7 @@ func NewIPSet(ips []net.IP, nets []net.IPNet) IPSet {
 	s := IPSet{ips, nets}
 	s.V4()
 	s.Sort()
+	s.RemoveDuplicates()
 	return s
 }
 
@@ -47,16 +48,38 @@ func (b IPSet) Contains(ip net.IP) bool {
 }
 
 func (b *IPSet) AddIP(ip net.IP) {
+	if b.Contains(ip) {
+		return
+	}
 	b.IPs = append(b.IPs, IPv4(ip))
 	b.Sort()
 }
 
-func (b IPSet) Sort() {
+func (b *IPSet) Sort() {
 	sort.Sort(ipsetsortips{b})
 }
 
+func (b *IPSet) RemoveDuplicates() {
+	w := ipsetsortips{b}
+	p, l := 0, w.Len()
+	if l <= 1 {
+		return
+	}
+
+	for i := 1; i < l; i++ {
+		if !w.Less(p, i) {
+			continue
+		}
+		p++
+		if p < i {
+			w.Swap(p, i)
+		}
+	}
+	w.IPs = w.IPs[:p+1]
+}
+
 type ipsetsortips struct {
-	IPSet
+	*IPSet
 }
 
 func (b ipsetsortips) Len() int {

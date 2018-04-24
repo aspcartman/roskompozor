@@ -18,12 +18,17 @@ func main() {
 		os.Exit(-1)
 	}
 
-	router{Main: os.Args[1], VPN: os.Args[2]}.routeLoop()
+	router{
+		Main:   os.Args[1],
+		VPN:    os.Args[2],
+		Source: rkn.ZapretInfo,
+	}.routeLoop()
 }
 
 type router struct {
-	Main string
-	VPN  string
+	Main   string
+	VPN    string
+	Source rkn.Source
 
 	bannedRefresh time.Time
 	banned        route.IPSet
@@ -66,7 +71,7 @@ func (r *router) route(ip net.IP) {
 func (r *router) refreshBanned() {
 	logrus.Info("refreshing banned")
 retry:
-	set, err := rkn.GetBanned()
+	set, err := r.Source()
 	if err != nil {
 		logrus.WithError(err).Error("failed fetching banned ips")
 		time.Sleep(2 * time.Second)

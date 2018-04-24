@@ -10,8 +10,8 @@ import (
 	"github.com/aspcartman/roskompozor/route"
 )
 
-func AntiZapret() (route.IPSet, error) {
-	res, err := http.Get("https://api.antizapret.info/group.php")
+func ZapretInfo() (route.IPSet, error) {
+	res, err := http.Get("https://raw.githubusercontent.com/zapret-info/z-i/master/dump.csv")
 	if err != nil {
 		return route.IPSet{}, err
 	}
@@ -22,6 +22,7 @@ func AntiZapret() (route.IPSet, error) {
 	var nets []net.IPNet
 
 	r := bufio.NewReader(res.Body)
+	r.ReadString('\n') // skip first line
 	for {
 		str, err := r.ReadString('\n')
 		if err == io.EOF {
@@ -31,7 +32,7 @@ func AntiZapret() (route.IPSet, error) {
 		}
 		str = strings.TrimSpace(str)
 
-		for _, ipstr := range strings.Split(str, ",") {
+		for _, ipstr := range strings.Split(strings.Split(str, ";")[0], " | ") {
 			if err := addip(ipstr, &ips, &nets); err != nil {
 				return route.IPSet{}, err
 			}
