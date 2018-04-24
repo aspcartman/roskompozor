@@ -15,6 +15,7 @@ import (
 func main() {
 	if len(os.Args) != 3 {
 		fmt.Println("Usage: roskompozor <main_iface> <vpn_iface>")
+		os.Exit(-1)
 	}
 
 	router{Main: os.Args[1], VPN: os.Args[2]}.routeLoop()
