@@ -43,19 +43,22 @@ func (r router) routeLoop() {
 
 	logrus.WithFields(logrus.Fields{"main": r.Main, "vpn": r.VPN}).Info("listening and routing")
 
-	if err := sniff.Sniff(r.Main, func(ip net.IP) {
-		switch {
-		case r.banned.Contains(ip) && !r.routed.Contains(ip):
-			r.route(ip)
-		case time.Since(r.routedRefresh) > 10*time.Second:
-			r.refreshRouted()
-		case time.Since(r.bannedRefresh) > 10*time.Minute:
-			r.refreshBanned()
+	for {
+		if err := sniff.Sniff(r.Main, func(ip net.IP) {
+			switch {
+			case r.banned.Contains(ip) && !r.routed.Contains(ip):
+				r.route(ip)
+			case time.Since(r.routedRefresh) > 10*time.Second:
+				r.refreshRouted()
+			case time.Since(r.bannedRefresh) > 10*time.Minute:
+				r.refreshBanned()
+			}
+		}); err != nil {
+			logrus.WithError(err).Error("failed sniffing network traffic")
 		}
-	}); err != nil {
-		logrus.WithError(err).Error("failed sniffing network traffic")
-		os.Exit(-1)
+		time.Sleep(2 * time.Second)
 	}
+
 }
 
 func (r *router) route(ip net.IP) {
@@ -79,7 +82,7 @@ retry:
 	}
 
 	r.banned, r.bannedRefresh = set, time.Now()
-	logrus.WithFields(logrus.Fields{"ips": len(set.IPs), "networks": len(set.Nets)}).Info("fetched banned ips")
+	logrus.WithFields(logrus.Fields{"ips": len(set.IPs), "networks": len(set.Nets)}).Info("refreshed banned ips")
 }
 
 func (r *router) refreshRouted() {
@@ -93,5 +96,5 @@ retry:
 	}
 
 	r.routed, r.routedRefresh = set, time.Now()
-	logrus.WithFields(logrus.Fields{"ips": len(set.IPs), "networks": len(set.Nets)}).Info("fetched routed ips")
+	logrus.WithFields(logrus.Fields{"ips": len(set.IPs), "networks": len(set.Nets)}).Info("refreshed routed ips")
 }
