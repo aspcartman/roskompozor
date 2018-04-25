@@ -11,4 +11,10 @@ func TestHostSet(t *testing.T) {
 			t.Errorf("not contains %s", h)
 		}
 	}
+
+	for _, h := range []string{"maya.ru"} {
+		if set.Contains(h){
+			t.Errorf("contains %s", h)
+		}
+	}
 }

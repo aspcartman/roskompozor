@@ -27,15 +27,11 @@ func (s *Hosts) Add(hosts ...string) {
 func (s Hosts) Contains(host string) bool {
 	host = reverseString(host)
 	i := sort.SearchStrings(s, host)
-	switch {
-	case i == len(s):
-		return false
-	case strings.HasPrefix(host, s[i]):
-		return true
-	case i > 0:
-		return strings.HasPrefix(host, s[i-1])
-	}
-	return false
+	return (i < len(s) && hostMatchesEntry(host, s[i])) || (i > 0 && hostMatchesEntry(host, s[i-1]))
+}
+
+func hostMatchesEntry(host, entry string) bool {
+	return strings.HasPrefix(host, entry) && (len(host) == len(entry) || host[len(entry)] == '.')
 }
 
 func (s Hosts) Trim() {
